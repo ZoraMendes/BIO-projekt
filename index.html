@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<title>Igra Vješala</title>
+<style>
+/* Tamniji zemljani tonovi */
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background-color: #cfc0aa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.game {
+    background-color: #e3d6c2;
+    padding: 35px 45px;
+    border-radius: 14px;
+    width: 950px;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 25px;
+    color: #4a3728;
+    font-size: 48px;   /* povećava veličinu naslova */
+    font-weight: 900;  /* zadebljava naslov */
+}
+
+
+.word {
+    font-size: 36px;
+    letter-spacing: 12px;
+    margin-bottom: 25px;
+    color: #2f2218;
+    font-weight: bold;
+    min-height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* Dodatno za jedan redak */
+    white-space: nowrap;   /* sprječava prelamanje */
+    overflow-x: auto;      /* dodaje horizontalni scroll ako je potrebno */
+    white-space: pre; /* zadržava razmake i prazna mjesta */
+
+
+}
+
+
+p {
+    margin: 10px 0;
+    color: #4a3728;
+    font-size: 16px;
+}
+
+input#letterInput {
+    width: 80px;
+    padding: 12px;
+    font-size: 24px;
+    text-align: center;
+    margin-right: 10px;
+    border-radius: 6px;
+    border: 1px solid #b09a82;
+    background-color: #f5efe7;
+    color: #2f2218;
+}
+
+button {
+    padding: 10px 18px;
+    font-size: 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background-color: #8b6b4f;
+    color: #ffffff;
+}
+
+button:hover {
+    background-color: #75553d;
+}
+
+.restart {
+    margin-top: 22px;
+    background-color: #6f8f5e;
+}
+
+.restart:hover {
+    background-color: #5d7a4f;
+}
+
+#message {
+    margin-top: 16px;
+    font-weight: bold;
+    min-height: 24px;
+    color: #2f2218;
+}
+.subtitle {
+    margin-top: 10px;       /* prostor ispod naslova */
+    margin-bottom: 25px;    /* prostor do riječi */
+    font-size: 18px;        /* veličina teksta */
+    color: #4a3728;         /* ista boja kao naslov */
+    font-weight: 500;       /* malo deblji tekst */
+}
+
+</style>
+</head>
+<body>
+<div class="game">
+    <h1>🎯 IGRA VJEŠALA</h1>
+    <p class="subtitle">Pogodi pojam iz ekologije:</p>
+    <div id="word" class="word"></div>
+
+    <p>Pokušaji za slovo: <span id="attempts"></span></p>
+
+    <input type="text" id="letterInput" maxlength="1" placeholder="Slovo">
+    <button id="guessBtn">Pogodi</button>
+
+    <p id="message"></p>
+    <button class="restart" id="restartBtn">Nova igra</button>
+</div>
+
+<script>
+const pojmovi = [
+    "biorazgradivost",
+    "efekt staklenika",
+    "ekologija",
+    "ugljikov dioksid",
+    "pošumljavanje",
+    "reciklaža"
+];
+
+let rijecZaPogoditi;
+let prikazRijeci = [];
+let maxPokusaja = 5;
+let pokusajiZaSlovo;
+
+// Funkcija za novu igru
+function novaIgra() {
+    rijecZaPogoditi = pojmovi[Math.floor(Math.random() * pojmovi.length)];
+    prikazRijeci = [];
+    pokusajiZaSlovo = maxPokusaja;
+
+    for (let i = 0; i < rijecZaPogoditi.length; i++) {
+        if (rijecZaPogoditi[i] === " ") {
+            prikazRijeci[i] = " ";
+        } else {
+            prikazRijeci[i] = "_";
+        }
+    }
+
+    document.getElementById("message").textContent = "";
+    updatePrikaz();
+}
+
+// Funkcija za ažuriranje crtice i pokušaja
+function updatePrikaz() {
+    document.getElementById("word").textContent = prikazRijeci.join(" ");
+    document.getElementById("attempts").textContent = pokusajiZaSlovo;
+}
+
+// Funkcija za pogađanje slova
+function pogodiSlovo() {
+    let input = document.getElementById("letterInput");
+    let slovo = input.value.toLowerCase();
+    input.value = "";
+
+    if (!slovo) return;
+
+    let pogodak = false;
+
+    for (let i = 0; i < rijecZaPogoditi.length; i++) {
+        if (rijecZaPogoditi[i].toLowerCase() === slovo && prikazRijeci[i] === "_") {
+            prikazRijeci[i] = rijecZaPogoditi[i];
+            pogodak = true;
+        }
+    }
+
+    if (pogodak) {
+        document.getElementById("message").textContent =
+            "✅ Pogodio si jedno slovo! Nastavi dalje.";
+        pokusajiZaSlovo = maxPokusaja;
+    } else {
+        pokusajiZaSlovo--;
+        document.getElementById("message").textContent =
+            "❌ Pogrešno slovo.";
+    }
+
+    if (pokusajiZaSlovo === 0) {
+        document.getElementById("message").textContent =
+            "💀 Izgubio si! Pojam je bio: " + rijecZaPogoditi;
+        return;
+    }
+
+    if (!prikazRijeci.includes("_")) {
+        document.getElementById("message").textContent =
+            "🎉 Čestitamo! Pogodio/la si cijeli pojam!";
+    }
+
+    updatePrikaz();
+}
+
+// Event listeneri za gumbe
+document.getElementById("guessBtn").addEventListener("click", pogodiSlovo);
+document.getElementById("restartBtn").addEventListener("click", novaIgra);
+
+// Start igre
+novaIgra();
+</script>
+</body>
+</html>
